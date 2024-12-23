@@ -11,8 +11,7 @@ public class Quiz {
     private boolean isGraded;
     private String feedback;
     private boolean isSubmitted;
-    private List<Student> submittedStudents=new ArrayList<>(); // New field
-    // Constructor
+    private List<Student> submittedStudents=new ArrayList<>();
     public Quiz(Long id, String title, String description) {
         this.id = id;
         this.title = title;
@@ -21,7 +20,6 @@ public class Quiz {
         this.feedback = "";
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }
