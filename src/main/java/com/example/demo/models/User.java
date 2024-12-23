@@ -1,5 +1,18 @@
 package com.example.demo.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "users")
 public class User {
     private int id;
     private String username;
@@ -57,5 +70,22 @@ public class User {
         this.role = role;
     }
 
+    @ElementCollection
+    @CollectionTable(name = "user_notifications", joinColumns = @JoinColumn(name = "user_id"))
+    private List<Notification> notifications;
 
+    public List<Notification> getNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(List<Notification> notifications) {
+        this.notifications = notifications;
+    }
+
+    public void addNotification(Notification notification) {
+        if (this.notifications == null) {
+            this.notifications = new ArrayList<>();
+        }
+        this.notifications.add(notification);
+    }
 }
