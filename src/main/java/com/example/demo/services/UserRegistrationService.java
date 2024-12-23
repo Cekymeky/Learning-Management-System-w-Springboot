@@ -1,58 +1,68 @@
 package com.example.demo.services;
-import java.util.ArrayList;
+
+import com.example.demo.models.User;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import org.springframework.stereotype.Service;
-
-import com.example.demo.models.User;
 
 @Service
-public class UserRegistrationService {
+public class UserRegistrationService implements UserDetailsService {
 
-    Map<Integer, User> Users = new HashMap<>();
+    private final Map<String, User> users = new HashMap<>();       // username -> User
+    private final Map<Integer, User> usersById = new HashMap<>();  // id -> User
 
-    public Boolean addPerson(User u) {
-        if(Users.get(u.getId()) != null) {
-            return false;
+
+    public void addPerson(User user) {
+
+        if (users.containsKey(user.getUsername())) {
+            throw new RuntimeException("User with this username already exists");
         }
-        Users.put(u.getId(), u);
-        return true;
+
+        if (usersById.containsKey(user.getId())) {
+            throw new RuntimeException("User with this ID already exists");
+        }
+
+        users.put(user.getUsername(), user);
+        usersById.put(user.getId(), user);
     }
 
 
-    public Boolean deleteUser(int id) {
-        if(Users.get(id) == null) {
-            return false;
+    public void deleteUser(String username) {
+        User user = users.remove(username);
+        if (user != null) {
+            usersById.remove(user.getId());
         }
-        Users.remove(id);
-        return true;
     }
 
 
-    public User getUser(int id) {
-        return Users.get(id);
+    public User getUser(String username) {
+        return users.get(username);
     }
 
-    public User isUser(int id , String password){
-        User u ;
-        if(Users.get(id) != null) {
-            u = Users.get(id);
-            if(u.getPassword().equals(password))
-                return u;
-        }
 
-        return null;
+    public User getUserById(int id) {
+        return usersById.get(id);
     }
 
     public List<User> getAllUsers() {
-        Set<Integer> ids = Users.keySet();
-        List<User> u = new ArrayList<>(ids.size());
-        for(Integer id : ids){
-            u.add(Users.get(id));
+        return List.copyOf(usersById.values());
+    }
+
+    @Override
+    public org.springframework.security.core.userdetails.UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = users.get(username);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found");
         }
-        return u;
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().toUpperCase()))
+        );
     }
 }
