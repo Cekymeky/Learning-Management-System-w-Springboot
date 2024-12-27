@@ -66,17 +66,30 @@ public class UserRegistrationController {
     @PutMapping("/updateProfile/{id}")
     public ResponseEntity<String> updateProfile(@PathVariable int id, @RequestBody User updatedUser) {
         try {
+            // Fetch the existing user by ID
             User existingUser = userService.getUserById(id);
+
+            // Check if the user exists
             if (existingUser != null) {
+                // Update the fields
                 existingUser.setUsername(updatedUser.getUsername());
                 existingUser.setEmail(updatedUser.getEmail());
+                existingUser.setRole(updatedUser.getRole());
+
+                // Update and encode the password if a new password is provided
+                if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
+                    existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+                }
+
+                // Save the updated user
                 userService.addPerson(existingUser);
+
                 return ResponseEntity.ok("Profile updated successfully");
             } else {
-                return ResponseEntity.status(404).body("user not found");
+                return ResponseEntity.status(404).body("User not found");
             }
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("error updating profile");
+            return ResponseEntity.status(500).body("Error updating profile: " + e.getMessage());
         }
     }
 
